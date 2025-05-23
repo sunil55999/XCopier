@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - User Management</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 2px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin - User Management</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>Reverse Trades</th>
+            <th>Execution Delay</th>
+            <th>Subscription</th>
+            <th>Actions</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.phone }}</td>
+            <td>{{ user.role }}</td>
+            <td>{{ 'Yes' if user.reverse_trades else 'No' }}</td>
+            <td>{{ user.execution_delay }}s</td>
+            <td>{{ user.subscription_status }}</td>
+            <td>
+                <button onclick="toggleSubscription({{ user.id }})">
+                    {{ 'Deactivate' if user.subscription_status == 'active' else 'Activate' }}
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <script>
+        async function toggleSubscription(userId) {
+            try {
+                const response = await fetch('/api/admin/toggle_subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await response.json();
+                if (data.status) {
+                    alert('Subscription status updated');
+                    location.reload();
+                } else {
+                    alert(data.error || 'Failed to toggle subscription');
+                }
+            } catch (e) {
+                alert('Failed to toggle subscription: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>
